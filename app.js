@@ -33,6 +33,20 @@ app.get('/resume/Madana_Venkatesh_Resume.pdf', (req, res) => {
 });
 
 // Start the server
+const https = require('https');
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    
+    // Self-ping to prevent Render's free tier from sleeping
+    const APP_URL = process.env.APP_URL; 
+    if (APP_URL) {
+        // Ping every 14 minutes (Render sleeps after 15 mins of inactivity)
+        setInterval(() => {
+            https.get(APP_URL, (res) => {
+                console.log(`Self-ping status: ${res.statusCode} to keep server awake`);
+            }).on('error', (err) => {
+                console.error(`Self-ping error: ${err.message}`);
+            });
+        }, 14 * 60 * 1000); 
+    }
 });
